@@ -2,29 +2,24 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Size by zoom</title>
+  <title>UBC buildings by accessibility (as of 2018)</title>
 
-  <!-- Load MapLibre's stylesheet (CSS). Its code (JavaScript) is loaded below, in the script. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@6.15.0/dist/maplibre-gl.css">
 </head>
 <body>
 
-  <!-- The web map will go in this div element. -->
   <div id="mapid" style="width: 600px; height: 400px;"></div>
 
   <script type="module">
-    // Load MapLibre's code (JavaScript). Version 6 is loaded as a module, with import.
     import * as maplibregl from 'https://cdn.jsdelivr.net/npm/maplibre-gl@6.15.0/dist/maplibre-gl.mjs';
 
-    // Make a map with new maplibregl.Map(), and keep it in the variable map.
     const map = new maplibregl.Map({
-      container: 'mapid',                  // the id of the div above
-      center: [-123.256113, 49.265637],    // [longitude, latitude]
-      zoom: 15,
+      container: 'mapid',
+      center: [-123.253, 49.266], 
+      zoom: 13.7,
       style: 'https://tiles.openfreemap.org/styles/positron'   // a ready-made style from OpenFreeMap
     });
 
-    // A module keeps its names to itself. This line lets you type map in the browser's console.
     window.map = map;
 
     const url = 'https://raw.githubusercontent.com/UBCGeodata/ubcv-locations/refs/heads/master/geojson/ubcv_main_entrances.geojson';
