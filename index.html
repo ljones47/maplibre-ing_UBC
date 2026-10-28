@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Size by zoom</title>
+
+  <!-- Load MapLibre's stylesheet (CSS). Its code (JavaScript) is loaded below, in the script. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@6.15.0/dist/maplibre-gl.css">
+</head>
+<body>
+
+  <!-- The web map will go in this div element. -->
+  <div id="mapid" style="width: 600px; height: 400px;"></div>
+
+  <script type="module">
+    // Load MapLibre's code (JavaScript). Version 6 is loaded as a module, with import.
+    import * as maplibregl from 'https://cdn.jsdelivr.net/npm/maplibre-gl@6.15.0/dist/maplibre-gl.mjs';
+
+    // Make a map with new maplibregl.Map(), and keep it in the variable map.
+    const map = new maplibregl.Map({
+      container: 'mapid',                  // the id of the div above
+      center: [-123.256113, 49.265637],    // [longitude, latitude]
+      zoom: 15,
+      style: 'https://tiles.openfreemap.org/styles/positron'   // a ready-made style from OpenFreeMap
+    });
+
+    // A module keeps its names to itself. This line lets you type map in the browser's console.
+    window.map = map;
+
+    const url = 'https://raw.githubusercontent.com/UBCGeodata/ubcv-locations/refs/heads/master/geojson/ubcv_main_entrances.geojson';
+    const urlRoutes = 'https://ljones47.github.io/maplibre-ing_UBC/ubcv_routes_src.geojson';
+
+    const entranceMarkerPaint = {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 2, 17, 8],
+      'circle-color': ['match', ['get', 'ACCESSIBLE'],
+                       1, '#418C81',
+                       0, '#8C4941',
+                    '#999999'],
+      'circle-opacity': 0.8
+    };
+
+    const routesMarkerPaint = {
+        'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1, 17, 4],
+        'line-color': '#8C6441',
+        'line-opacity': 0.3
+    }
+
+    function interpretAccessibility(number) {
+        if ((number) === 1) {
+            return "Yes"
+        }
+        return "No"
+    }
+    map.on('mousemove', 'entrance-circles', hoverEntrance);
+    map.on('mouseleave', 'entrance-circles', leaveEntrance);
+
+      const hoverPopup = new maplibregl.Popup({ closeButton: false });
+      const lngLat = map.unproject([10, 10]);
+
+      function hoverEntrance(e) {
+        const entrance = e.features[0].properties;
+        if (entrance.ADD_ID) {
+          hoverPopup.setLngLat(e.lngLat);
+          hoverPopup.setHTML(`<h4>${entrance.PLACENAME}</h4><p>Main entrance accessible: ${(interpretAccessibility(entrance.ACCESSIBLE))}</p>`);
+          hoverPopup.addTo(map);
+        } else {
+          hoverPopup.remove();
+        }
+      }
+
+      function leaveEntrance() {
+        hoverPopup.remove();
+      }
+
+    // Add the source and the layer only after the map's style has loaded.
+    map.on('load', function () {
+      map.addSource('addresses', {
+        type: 'geojson',
+        data: url,
+        attribution: 'Entrances: UBC Campus Addresses, UBCGeodata'
+      });
+      map.addSource('routes', {
+        type: 'geojson',
+        data: urlRoutes,
+        attribution: 'Routes: UBC campus Routes, UBCGeodata'
+      });
+
+      map.addLayer({
+        id: 'entrance-circles',
+        type: 'circle',
+        source: 'addresses',
+        paint: entranceMarkerPaint
+      });
+      map.addLayer({
+        id: 'routes-lines',
+        type: 'line',
+        source: 'routes',
+        paint: routesMarkerPaint
+      })
+      map.on('click', 'entrance-circles', onEachEntrance);
+    });
+  </script>
+
+</body>
+</html>
+
